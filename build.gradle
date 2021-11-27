@@ -1,52 +1,55 @@
 // ================
 // Gradle configuration
-
+buildscript {
+	repositories {
+		jcenter()
+	}
+	dependencies {
+		//classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.13.0"
+		classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4+"
+		classpath 'net.ltgt.gradle:gradle-errorprone-plugin:0.0.13'
+	}
+}
 plugins {
 	id 'java-library'
 	id 'maven-publish'
 	id 'org.springframework.boot' version '2.2.4.RELEASE'
-	id 'com.jfrog.bintray' version '1.8.4'
-
-	// https://github.com/palantir/gradle-git-version
-	//id 'com.palantir.git-version' version '0.12.2'
+	id 'com.jfrog.artifactory' version '4.17.2'
 
 	// code quality plugins
 	id 'checkstyle'
 	id 'pmd'
 	id 'jacoco'
 	id 'com.github.spotbugs' version '3.0.0' apply false
-	id 'de.thetaphi.forbiddenapis' version '2.7'
+	//id 'de.thetaphi.forbiddenapis' version '2.7'
 	id 'de.aaschmid.cpd' version '3.1'
 	id 'com.diffplug.gradle.spotless' version '3.27.1'
 }
 
-wrapper {
-	gradleVersion = '6.0.1'
-	distributionType = Wrapper.DistributionType.ALL
-}
-
-// ================
-// Project metadata configuration
-
-group 'com.tvc.common.logging'
-version '1.0-SNAPSHOT'
-
-// ================
-// Build configuration
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-compileJava {
-	options.compilerArgs << '-Werror'
-	options.compilerArgs << '-Xlint:all' << '-Xlint:-processing' << '-Xlint:-deprecation'
+
+
+
+allprojects {
+	group = "com.tvc.common.logging"
+
+	repositories {
+		mavenCentral()
+		jcenter()
+	}
+
+	apply plugin: 'io.spring.dependency-management'
+	apply plugin: 'idea'
 }
-
-apply plugin: 'io.spring.dependency-management'
-
+/*
 repositories {
+	jcenter()
 	mavenCentral()
 }
+*/
 
 dependencies {
 	api 'org.slf4j:slf4j-api'
@@ -62,48 +65,25 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'javax.servlet:javax.servlet-api'
 }
+jar {
+	enabled = true
+	from 'gradle', {
+		into 'gradle'
+	}
+
+	manifest {
+		attributes 'Implementation-Title': 'Common Library', 'Implementation-Version': version
+	}
+}
 
 bootJar {
 	enabled = false
 }
 
-jar {
-	enabled = true
-}
-
-// ================
-// Lint / Test configuration
-
-apply from: "${rootProject.projectDir}/config/checkstyle.gradle"
-apply from: "${rootProject.projectDir}/config/spotbugs.gradle"
-//apply from: "${rootProject.projectDir}/config/pmd.gradle"
-//apply from: "${rootProject.projectDir}/config/cpd.gradle"
-//apply from: "${rootProject.projectDir}/config/jacoco.gradle"
-//apply from: "${rootProject.projectDir}/config/forbiddenapis.gradle"
-//apply from: "${rootProject.projectDir}/config/spotless.gradle"
-
-tasks.withType(com.github.spotbugs.SpotBugsTask) {
-	reports {
-		html.enabled = true
-		xml.enabled = false
-	}
-}
-
-tasks.withType(Test) {
-	exclude "**/*\$*", "**/*Tests.class", "**/examples/**"
-	reports {
-		html.enabled = true
-		junitXml.outputPerTestCase = false
-	}
-	testLogging.exceptionFormat = 'full'
-	beforeTest {
-		logger.lifecycle("{} > {}", it.parent.name, it.name)
-	}
-}
 
 // ================
 // Deploy configuration
-
-apply from: "${rootProject.projectDir}/gradle/sourceArtifact.gradle"
 apply from: "${rootProject.projectDir}/gradle/publish.gradle"
+
+apply from: "$rootDir/gradle/projects.gradle"
 

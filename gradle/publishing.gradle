@@ -1,0 +1,26 @@
+apply plugin: 'maven-publish'
+
+artifactory {
+    contextUrl = "http://localhost:8081/artifactory/"
+    //The base Artifactory URL if not overridden by the publisher/resolver
+    publish {
+        repository {
+            repoKey = 'local-dev'
+            username = "admin"
+            password = "Jasmi123"
+            maven = true
+
+        }
+        defaults {
+            publications('jar')
+        }
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+}

@@ -1,9 +1,0 @@
-checkstyle {
-	toolVersion = "8.27"
-	showViolations = true
-	configFile = rootProject.file("${rootProject.projectDir}/config/checkstyle/checkstyle.xml")
-}
-
-checkstyleTest {
-	configFile = file("${rootProject.projectDir}/config/checkstyle/checkstyle-test.xml")
-}
